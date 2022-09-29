@@ -73,5 +73,31 @@ regressor.compile(optimizer = 'adam', loss = 'mean_squared_error')
 # Fitting the RNN to the Training set
 regressor.fit(x_train, y_train, epochs=100, batch_size=32)
 
-
 # Part 3 - Making the predictions and visualising the results
+
+# Getting the real stock price in 2017
+dataset_test = pd.read_csv('Google_Stock_Price_Test.csv')
+real_stock_price= dataset_test.iloc[:, 1:2].values
+
+# Getting the predict stock price of 2017
+dataset_total = pd.concat((dataset_train['Open'], dataset_test['Open']), axis = 0)
+inputs = dataset_total[len(dataset_total) - len(dataset_test) - 60:].values
+inputs = inputs.reshape(-1, 1)
+inputs = sc.transform(inputs)
+x_test = []
+for i in range(60, 80):
+    x_test.append(inputs[i-60:i, 0])
+x_test = np.array(x_test)
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+predicted_stock_price = regressor.predict(x_test)
+predicted_stock_price = sc.inverse_transform(predicted_stock_price)
+
+# Visualising the results
+
+plt.plot(real_stock_price, color = 'red', label = 'Real Google Stock Price')
+plt.plot(predicted_stock_price, color = 'blue', label = 'Predicted Google Stock Price')
+plt.title('Google Stock Price Prediction')
+plt.xlabel('Time')
+plt.ylabel('Google Stock Price')
+plt.legend()
+plt.show()
